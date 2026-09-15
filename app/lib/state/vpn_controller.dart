@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/foundation.dart';
 
+import '../config/vpn_config.dart';
 import '../data/servers.dart';
 import '../models/vpn_server.dart';
 import '../vpn/vpn_engine.dart';
@@ -58,10 +59,10 @@ class VpnController extends ChangeNotifier {
   Future<void> toggle() => isConnected || isBusy ? disconnect() : connect();
 
   Future<void> connect() async {
-    // Phase 1: fetch this config from your backend's POST /connect.
-    // Phase 0: the mock ignores it; the real engine would use the Sweden config.
-    const placeholderConfig = '';
-    await _engine.connect(_selected, placeholderConfig);
+    // Phase 0b: use the real Sweden WireGuard config for every server (single
+    // test node). Phase 1: fetch a per-server config from `POST /connect`.
+    // The MockVpnEngine ignores the config; WireGuardEngine uses it.
+    await _engine.connect(_selected, VpnConfig.swedenTestConfig);
   }
 
   Future<void> disconnect() => _engine.disconnect();

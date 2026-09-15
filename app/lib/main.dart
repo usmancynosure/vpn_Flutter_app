@@ -1,3 +1,6 @@
+import 'dart:io' show Platform;
+
+import 'package:flutter/foundation.dart' show kIsWeb;
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
@@ -12,15 +15,21 @@ void main() {
   runApp(const ShieldVpnApp());
 }
 
+VpnEngine _buildEngine() {
+  if (!kIsWeb && Platform.isAndroid) return WireGuardEngine();
+  return MockVpnEngine();
+}
+
 class ShieldVpnApp extends StatelessWidget {
   const ShieldVpnApp({super.key});
 
   @override
   Widget build(BuildContext context) {
     return ChangeNotifierProvider(
-      // Phase 0: MockVpnEngine so the UI runs with no native setup.
-      // Phase 0b: swap in WireGuardEngine() once the native tunnel is wired.
-      create: (_) => VpnController(MockVpnEngine()),
+      // Real WireGuard tunnel on Android (VpnService, no Apple account needed).
+      // iOS needs a Network Extension target first, so it stays on the mock
+      // until that's added; web/desktop always use the mock.
+      create: (_) => VpnController(_buildEngine()),
       child: MaterialApp(
         title: 'Shield VPN',
         debugShowCheckedModeBanner: false,
